@@ -1,5 +1,7 @@
 # ScryTheSpire
 
+in backend terminal
+uvicorn main:app --reload
 backend/
 ├── main.py          # FastAPI app entry point
 ├── runs.py          # Routes for /runs
