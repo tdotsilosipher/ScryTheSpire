@@ -4,9 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from runs import router as runs_router
 from stats import router as stats_router
+from rate_limit import RateLimitHeadersMiddleware
 
 app = FastAPI(title="Scry The Spire")
 
+app.add_middleware(RateLimitHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],

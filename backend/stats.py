@@ -5,8 +5,15 @@ from sqlalchemy import func
 
 from database import SessionLocal
 from models import Run, CardPick, RelicPick
+from rate_limit import rate_limit
 
-router = APIRouter(prefix="/stats", tags=["stats"])
+router = APIRouter(
+    prefix="/stats",
+    tags=["stats"],
+    # 30 requests/minute GLOBALLY across all /stats/* endpoints.
+    dependencies=[Depends(rate_limit(limit=30, window=60, scope="stats"))],
+)
+
 
 def get_db():
     db = SessionLocal()
@@ -14,6 +21,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 # Starter Cards
 IGNORE_CARDS = [
@@ -49,7 +57,7 @@ IGNORE_RELICS = [
 ]
 
 # Character Stats
-@router.get("/characterWinrate", 
+@router.get("/characterWinrate",
     summary="Winrate By Character",
     description="Returns win rate, total run count, and total win for each character."
 )
@@ -69,7 +77,7 @@ def winrate_by_character(db: Session = Depends(get_db)):
 
 # Cards
 @router.get(
-    "/topCards", 
+    "/topCards",
     summary="Most Picked Cards",
     description="Returns most picked cards sorted by descending pick count, starter cards are excluded."
 )
@@ -86,7 +94,7 @@ def top_cards(limit: int = 100, db: Session = Depends(get_db)):
     return [{"card_id": c, "count": cnt} for c, cnt in picks]
 
 @router.get(
-    "/cardWinrate", 
+    "/cardWinrate",
     summary="Highest Winrate Cards.",
     description="Returns highest win rate cards, with minimum pick count, starter cards are excluded."
 )
@@ -121,7 +129,7 @@ def card_winrate(limit: int = 100, minPicks: int = 0, db: Session = Depends(get_
     ]
 
 # Relics
-@router.get("/topRelics", 
+@router.get("/topRelics",
     summary="Most Picked Relics.",
     description="Returns most picked relics sorted by descending pick count, starter relics are excluded."
 )
@@ -136,7 +144,7 @@ def top_relics(limit: int = 100, db: Session = Depends(get_db)):
      .limit(limit).all()
     return [{"relic_id": r, "count": cnt} for r, cnt in picks]
 
-@router.get("/relicWinrate", 
+@router.get("/relicWinrate",
     summary="Highest Winrate Relics.",
     description="Returns highest win rate relics, with minimum pick count, starter relics are excluded."
 )

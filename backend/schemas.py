@@ -2,7 +2,6 @@
 # Validates request data
 # Fix and define SQLAlchemy outputs to API JSON
 
-
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional, Any
